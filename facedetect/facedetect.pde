@@ -2,9 +2,29 @@ import KinectPV2.*;
 import java.lang.*;
 KinectPV2 kinect;
 
+Button b1;
+Button b2;
+Button b3;
+
+int selectedID;
+
+PImage img1; //rainbowBlush
+PImage img2; //rainbowBlush
+PImage img3; //rainbowBlush
+
+PImage img4; //rudolph
+PImage img5; //rudolph
+PImage img6; //rudolph
+
+PImage img7; //dog
+PImage img8; //dog
+PImage img9; //dog
+
 PVector mouthCornerLeft = new PVector();
 
 PVector mouthCornerRight = new PVector();
+
+int button = 0;
 
 int mouthCenterY = 0;
 
@@ -36,6 +56,16 @@ int [] depth;
 
 void setup() {
   
+  b1 = new Button(1800, 20, 1,"1");
+  b2 = new Button(1800, 130, 2, "2");
+  b3 = new Button(1800, 240, 3, "3" );
+  img1 = loadImage("rainbowTongue.png");
+  img2 = loadImage("rainbowBlush.png");
+  img3 = loadImage("rudolph.png");
+  img4 = loadImage("cat.png");
+  
+
+  
   size(1920, 1080, P2D);
 
   kinect = new KinectPV2(this);
@@ -58,27 +88,25 @@ void setup() {
 
 void draw() {
   
+  
   background(0);
   depth = kinect.getRawDepthData();
   kinect.generateFaceData();
 
- /* //draw face information obtained by the infrared frame
-  pushMatrix();
-  //translate(1920*0.5f, 0.0f);
-  image(kinect.getInfraredImage(), 0, 0);
-  getFaceMapInfraredData();
-  popMatrix();*/
-  
-   //draw face information obtained by the color frame
   pushMatrix();
  // scale(0.5f);
-  image(kinect.getColorImage(), 0,0,1920,1080);
+ kinect.getColorImage();
+ //image(kinect.getColorImage(), 0,0,1920,1080);
+ background(255, 255, 255, 128);
   getFaceData();
   
-
+ b1.drawButton();
+ b2.drawButton();
+ b3.drawButton();
   popMatrix(); 
 
 
+ 
   
   text("frameRate "+frameRate, 50, 50);
 }
@@ -165,6 +193,8 @@ public void getFaceData() {
 
       
       PVector nosePos = new PVector();
+      PVector eyeRight = new PVector();
+       PVector eyeLeft = new PVector();
       
       noStroke();
 
@@ -174,14 +204,22 @@ public void getFaceData() {
         if (j == KinectPV2.Face_Nose)
           nosePos.set(facePointsColor[j].x, facePointsColor[j].y);
         else if (j == KinectPV2.Face_LeftMouth)
+        {
           mouthCornerLeft.set(facePointsColor[j].x, facePointsColor[j].y);
+        }
         else if (j == KinectPV2.Face_RightMouth)
           mouthCornerRight.set(facePointsColor[j].x, facePointsColor[j].y);
-        ellipse(facePointsColor[j].x, facePointsColor[j].y, 15, 15);
+        else if (j == KinectPV2.Face_RightEye)
+          eyeRight.set(facePointsColor[j].x, facePointsColor[j].y);
+        else if (j == KinectPV2.Face_LeftEye)
+          eyeLeft.set(facePointsColor[j].x, facePointsColor[j].y);
+       ellipse(facePointsColor[j].x, facePointsColor[j].y, 15, 15);
+        
       }
       
-      
-
+       System.out.println("width:"+ (abs(eyeLeft.x - eyeRight.x)));
+        System.out.println("height: "+(abs(eyeLeft.y - nosePos.y)));
+//System.exit(0);
       mouthLeft = (int) mouthCornerLeft.x;
       System.out.println("mouthLeft "+mouthLeft);
       
@@ -257,12 +295,33 @@ public void getFaceData() {
       if(mouthClosestDepthIndex != -1 && str.equals("MouthOpen: Yes") && tongueIDX != -1 && tongueIDY != -1)
       {
          mouthClosedTimeCount = 0;
-         ellipse(tongueIDX, tongueIDY, 15, 15);
+         //ellipse(tongueIDX, tongueIDY, 25, 25);
+         if (selectedID == 1)
+          image(img1, tongueIDX-40, tongueIDY,80, 100);  
+
           
       }
           fill(255);
           text(str, nosePos.x + 150, nosePos.y - 70 + j*25);
-        
+          
+          if (selectedID == 1)
+          {
+             //image(img2,nosePos.x-40,nosePos.y-15,80,30);
+             image(img2,nosePos.x-75,nosePos.y-20,150,40);
+             
+          }
+          else if (selectedID == 2)
+          {  
+             //imageMode(CENTER);
+             //image(img3,nosePos.x-(abs(eyeLeft.x - eyeRight.x)+50)/2,nosePos.y-(abs(eyeLeft.y - nosePos.y)+50)/2 ,abs(eyeLeft.x - eyeRight.x)+50,abs(eyeLeft.y - nosePos.y)+50);
+             image(img3, nosePos.x-100, nosePos.y-50, 200, 100);
+             
+          }
+          else if(selectedID == 3)
+          {
+            //image(img4,nosePos.x-50,nosePos.y-75 ,100 ,100);
+            image(img4,nosePos.x-75,nosePos.y-150 ,150 ,200);
+          }
       }
       
        
@@ -336,4 +395,21 @@ String getStateTypeAsString(int state, int type) {
   }
 
   return str;
+}
+
+
+void mousePressed() {
+
+  if (b1.rectOver) {
+    b1.currentColor = b1.rectColor;
+    selectedID = b1.id;
+  }
+   if (b2.rectOver) {
+    b2.currentColor = b2.rectColor;
+    selectedID = b2.id;
+  }
+   if (b3.rectOver) {
+    b3.currentColor = b3.rectColor;
+    selectedID = b3.id;
+  }
 }
